@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+- **Image proxy query parameter injection** (#)
+  - Forwarded query parameter values (`maxWidth`, `maxHeight`, `quality`, `tag`) are now URL-encoded before being appended to the upstream Emby URL, preventing parameter injection via crafted request values
+- **API key not URL-encoded in image proxy URL** (#)
+  - The Emby API key is now percent-encoded when placed in the upstream image URL query string, preventing malformed URLs if the key contains special characters such as `&`, `=`, or `+`
+- **`image_type` path parameter not validated** (#)
+  - The `image_type` URL path segment is now validated against a strict allowlist of known Emby image types (`Primary`, `Art`, `Backdrop`, `Banner`, `Logo`, `Thumb`, `Disc`, `Box`, `Screenshot`, `Menu`, `Chapter`, `BoxRear`, `Profile`) before any upstream request is made; invalid values return `400 Bad Request`
+- **Added `SECURITY.md`** (#)
+  - Documents supported versions, private vulnerability reporting via GitHub Security Advisories, out-of-scope items, and disclosure policy
+
+### Fixed
+- **HACS minimum Home Assistant version too restrictive** (#)
+  - `hacs.json` `homeassistant` field corrected from `2025.11.0` to `2024.4.0`, aligning with the earliest HA release that introduced `ConfigFlowResult`
+
+### Changed
+- **Release workflow now commits version bump back to repository** (#)
+  - `manifest.json` version is now pushed to the default branch as part of the release process, keeping the source version in sync with published GitHub Releases
+
 ## [0.6.0] - 2026-01-11
 
 ### Fixed

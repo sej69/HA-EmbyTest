@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from http import HTTPStatus
 from typing import TYPE_CHECKING
+from urllib.parse import quote
 
 import aiohttp
 from aiohttp import web
@@ -31,6 +32,13 @@ STREAM_CHUNK_SIZE = 65536
 
 # Timeout for image fetch requests (seconds)
 IMAGE_FETCH_TIMEOUT = 10
+
+# Valid Emby image types — used to validate the image_type path parameter
+_VALID_IMAGE_TYPES = frozenset({
+    "Primary", "Art", "Backdrop", "Banner", "Logo",
+    "Thumb", "Disc", "Box", "Screenshot", "Menu",
+    "Chapter", "BoxRear", "Profile",
+})
 
 
 async def async_setup_image_proxy(hass: HomeAssistant) -> None:
@@ -86,6 +94,13 @@ class EmbyImageProxyView(HomeAssistantView):
         """
         # Get hass from self (set by HA view registration) or from request app
         hass: HomeAssistant = getattr(self, "hass", None) or request.app["hass"]
+
+        # Validate image_type against known Emby image types
+        if image_type not in _VALID_IMAGE_TYPES:
+            return web.Response(
+                status=HTTPStatus.BAD_REQUEST,
+                text=f"Invalid image type: {image_type}",
+            )
 
         # Find the coordinator for the server
         coordinator = self._find_coordinator(hass, server_id)
@@ -205,13 +220,13 @@ class EmbyImageProxyView(HomeAssistantView):
         Returns:
             The full URL to fetch the image.
         """
-        url = f"{base_url}/Items/{item_id}/Images/{image_type}"
-        params: list[str] = [f"api_key={api_key}"]
+        url = f"{base_url}/Items/{quote(item_id, safe='')}/Images/{quote(image_type, safe='')}"
+        params: list[str] = [f"api_key={quote(api_key, safe='')}"]
 
-        # Forward relevant query parameters
+        # Forward relevant query parameters — values are URL-encoded to prevent injection
         for key in ("maxWidth", "maxHeight", "quality", "tag"):
             if key in query_params:
-                params.append(f"{key}={query_params[key]}")
+                params.append(f"{key}={quote(query_params[key], safe='')}")
 
         return f"{url}?{'&'.join(params)}"
 

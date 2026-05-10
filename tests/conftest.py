@@ -2,9 +2,18 @@
 
 from __future__ import annotations
 
+import asyncio
+import sys
 from collections.abc import Generator
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
+
+# Force SelectorEventLoop on Windows — ProactorEventLoop (IocpProactor) is
+# incompatible with the Home Assistant test framework on Python 3.12+.
+# pytest-asyncio reads event_loop_policy to create each test's event loop,
+# so overriding the global policy alone is not sufficient.
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 import pytest
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SSL
@@ -26,6 +35,19 @@ def auto_enable_custom_integrations(
 ) -> Generator[None]:
     """Enable custom integrations in Home Assistant."""
     yield
+
+
+if sys.platform == "win32":
+
+    @pytest.fixture
+    def event_loop_policy() -> asyncio.WindowsSelectorEventLoopPolicy:
+        """Use SelectorEventLoop on Windows.
+
+        pytest-asyncio uses this fixture to create each test's event loop.
+        ProactorEventLoop (the Windows default) calls socket.socket() during
+        init, which pytest-socket blocks, causing every test to error.
+        """
+        return asyncio.WindowsSelectorEventLoopPolicy()
 
 
 @pytest.fixture

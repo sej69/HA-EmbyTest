@@ -23,6 +23,14 @@ jobs:
             custom_components/embymedia/manifest.json > tmp.json
           mv tmp.json custom_components/embymedia/manifest.json
 
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add custom_components/embymedia/manifest.json
+          git commit -m "chore: bump version to ${{ github.event.release.tag_name }}"
+          git push origin HEAD:${{ github.event.repository.default_branch }}
+
       - name: Create release zip
         run: |
           cd custom_components/embymedia
