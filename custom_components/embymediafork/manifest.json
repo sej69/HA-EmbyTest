@@ -1,5 +1,5 @@
 {
-  "domain": "embymedia",
+  "domain": "embymediafork",
   "name": "Emby Media",
   "codeowners": ["@troykelly"],
   "config_flow": true,

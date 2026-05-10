@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from .coordinator_sensors import EmbyLibraryCoordinator, EmbyServerCoordinator
 
 # Integration domain
-DOMAIN: Final = "embymedia"
+DOMAIN: Final = "embymediafork"
 
 
 # Runtime data class to hold all coordinators
