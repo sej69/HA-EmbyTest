@@ -7,6 +7,9 @@ on:
 permissions:
   contents: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   release:
     name: Prepare release
@@ -20,23 +23,23 @@ jobs:
           VERSION="${{ github.event.release.tag_name }}"
           VERSION="${VERSION#v}"  # Remove 'v' prefix if present
           jq --arg v "$VERSION" '.version = $v' \
-            custom_components/embymedia/manifest.json > tmp.json
-          mv tmp.json custom_components/embymedia/manifest.json
+            custom_components/embymediafork/manifest.json > tmp.json
+          mv tmp.json custom_components/embymediafork/manifest.json
 
       - name: Commit version bump
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add custom_components/embymedia/manifest.json
+          git add custom_components/embymediafork/manifest.json
           git commit -m "chore: bump version to ${{ github.event.release.tag_name }}"
           git push origin HEAD:${{ github.event.repository.default_branch }}
 
       - name: Create release zip
         run: |
-          cd custom_components/embymedia
-          zip -r ../../embymedia.zip .
+          cd custom_components/embymediafork
+          zip -r ../../embymediafork.zip .
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v2
         with:
-          files: embymedia.zip
+          files: embymediafork.zip
